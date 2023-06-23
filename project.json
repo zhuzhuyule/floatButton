@@ -1,0 +1,10 @@
+{
+    "name": "floatButton",
+    "main": "main.js",
+    "ignore": [
+        "build"
+    ],
+    "packageName": "com.zhuzhuyule.floatButton",
+    "versionName": "1.0.0",
+    "versionCode": 1
+}
