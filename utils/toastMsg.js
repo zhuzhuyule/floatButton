@@ -8,8 +8,8 @@ let toastAndLog = (function () {
     } else {
       toast.setText(msg);
     }
-    log(msg);
     toast.show();
+    log(msg);
   }
   return showText;
 })();
@@ -22,11 +22,7 @@ function toastMsg() {
       msg += `\t`;
     }
   }
-  events.broadcast.emit('toast-message', msg);
-}
-
-events.broadcast.on('toast-message', function (msg) {
   toastAndLog(msg);
-});
+}
 
 module.exports = toastMsg;
