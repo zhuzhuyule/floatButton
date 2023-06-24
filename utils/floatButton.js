@@ -6,6 +6,8 @@ function newFloatButton(config) {
   const cacheKey = config.cacheKey || 'zhuzhuyule:float-button';
   const buttonContent = config.buttonContent;
   const settingContent = config.settingContent;
+  const onShowSettingBefore = config.onShowSettingBefore;
+  const onShowButtonBefore = config.onShowSettingBefore;
 
   // storages.remove(cacheKey);
   const floatBtnStorage = storages.create(cacheKey);
@@ -49,6 +51,13 @@ function newFloatButton(config) {
   const buttonDialog = newDialog(
     buttonContent,
     function onDialogShow(dialog, params) {
+      if (onShowButtonBefore) {
+        try {
+          onShowButtonBefore(dialog, params);
+        } catch (error) {
+          log(error);
+        }
+      }
       const dialogWidth = params.dialogWidth;
       const dialogHeight = params.dialogHeight;
       const buttonWidth = floatBtn.getWidth();
@@ -94,6 +103,13 @@ function newFloatButton(config) {
       {settingContent}
     </vertical>,
     function onDialogShow(dialog, params) {
+      if (onShowSettingBefore) {
+        try {
+          onShowSettingBefore(dialog, params);
+        } catch (error) {
+          log(error);
+        }
+      }
       dialog.buttonSize.setProgress(buttonSize - 40);
       dialog.buttonAlpha.setProgress(buttonAlpha * 100 - 20);
       dialog.buttonColor.setProgress(parseInt(buttonColor.slice(1), 16));

@@ -32,10 +32,12 @@ function newDialog(view, beforeShow) {
   hideDialog();
 
   function showDialog() {
-    try {
-      beforeShow(dialog, { dialogWidth, dialogHeight });
-    } catch (error) {
-      log(error);
+    if (beforeShow) {
+      try {
+        beforeShow(dialog, { dialogWidth, dialogHeight });
+      } catch (error) {
+        log(error);
+      }
     }
     dialog.setSize(-1, -1);
     setTimeout(() => {
