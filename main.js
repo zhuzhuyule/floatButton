@@ -16,7 +16,6 @@ const floatBtn = newFloat({
     <vertical gravity="center" bg="#FFFFFF" padding="20">
       <button id="reopen" text="继续播放" />
       <button id="playNext" text="下一集" />
-      <button id="skip" text="跳过" />
       <button id="fullscreen" text="全屏" />
     </vertical>
   ),
@@ -141,46 +140,6 @@ onDialogBtnClick(buttonDialog, 'playNext', () => {
           .then(() =>
             findObject(getId('play_next')).then((selector) => selector.click())
           )
-          .catch();
-      }
-    });
-  }, 200);
-});
-
-onDialogBtnClick(buttonDialog, 'skip', () => {
-  setTimeout(() => {
-    safeThread('跳过前序', () => {
-      if (getId('previewPlayerPlace').findOnce()) {
-        if (!getId('curr_time').exists()) {
-          click(400, 400);
-        }
-
-        findObject(getId('total_time'))
-          .then((item) => {
-            if (item) {
-              let current = 0;
-              let total = 0;
-              return waitAction(() => {
-                current = getId('curr_time').findOne().text().split(':');
-                total = getId('total_time').findOne().text().split(':');
-
-                current = current[0] * 60 + current[1];
-                total = total[0] * 60 + total[1];
-
-                return total > 0;
-              }, 5000)
-                .then(() => {
-                  if (total > 0) {
-                    toastMsg('执行跳过');
-                    var rect = getId('seekBar').findOne().bounds();
-                    var pointX = rect.left + 52; //rect.width * 10 / 100;
-                    var pointY = rect.centerY();
-                    click(pointX, pointY);
-                  }
-                })
-                .catch();
-            }
-          })
           .catch();
       }
     });
