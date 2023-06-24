@@ -70,16 +70,17 @@ function startFromHome() {
               getId('tvHistory').findOne(2000).click();
               startTimer = setTimeout(() => {
                 click(150, 250);
-                ivThumb;
                 findObject(getId('ivThumb'), 1000)
                   .then((item) => {
                     item.parent().click();
                     startTimer = 0;
-                    findObject(getId('previewPlayerPlace'), 5000)
-                      .then(() => {
-                        findObject(textContains('全屏'))
-                          .then((item) => item.click())
-                          .catch();
+                    findObject(getId('subtitle_view'), 5000)
+                      .then((selector) => {
+                        if (selector.bounds().left !== 0) {
+                          findObject(getId('tvPlay'))
+                            .then((item) => item.click())
+                            .catch();
+                        }
                         isRunning = false;
                         count = 0;
                       })
@@ -102,16 +103,26 @@ onDialogBtnClick(buttonDialog, 'reopen', () => {
     safeThread(
       '继续播放',
       () => {
-        count = 0;
-        if (getId('tvHistory').findOnce() || getId('tvDelAll').findOnce()) {
-          startFromHome();
-        } else {
-          startPage('Detail');
-          findObject(getId('previewPlayerPlace'), 3000).catch(() => {
-            back();
+        reopenVideo();
+        setTimeout(() => {
+          count = 0;
+          if (getId('tvHistory').findOnce() || getId('tvDelAll').findOnce()) {
             startFromHome();
-          });
-        }
+          } else {
+            findObject(getId('subtitle_view'))
+              .then((selector) => {
+                if (selector.bounds().left !== 0) {
+                  findObject(getId('tvPlay'))
+                    .then((item) => item.click())
+                    .catch();
+                }
+              })
+              .catch(() => {
+                back();
+                startFromHome();
+              });
+          }
+        }, 800);
       },
       60 * 1000
     );
@@ -177,15 +188,13 @@ onDialogBtnClick(buttonDialog, 'skip', () => {
 });
 
 onDialogBtnClick(buttonDialog, 'fullscreen', () => {
-  if (getId('subtitle_view').exists()) {
-    findObject(getId('subtitle_view')).then((selector) => {
-      if (selector.bounds().left !== 0) {
-        findObject(textContains('全屏'))
-          .then((item) => item.click())
-          .catch();
-      }
-    });
-  }
+  findObject(getId('subtitle_view')).then((selector) => {
+    if (selector.bounds().left !== 0) {
+      findObject(textContains('全屏'))
+        .then((item) => item.click())
+        .catch();
+    }
+  });
 });
 
 function getId(key) {
@@ -215,6 +224,16 @@ events.broadcast.on('start-page', function (page) {
   app.startActivity({
     packageName: package,
     className: `com.github.tvbox.osc.ui.activity.${page}Activity`,
-    root: true,
+    root: page !== 'Home',
   });
 });
+
+function reopenVideo() {
+  swipe(
+    device.width - 10,
+    (device.height / 3) * 2,
+    device.width / 2,
+    (device.height / 3) * 2,
+    600
+  );
+}
