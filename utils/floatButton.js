@@ -8,6 +8,9 @@ function newFloatButton(config) {
   const settingContent = config.settingContent;
   const onShowSettingBefore = config.onShowSettingBefore;
   const onShowButtonBefore = config.onShowSettingBefore;
+  const onClick = config.onClick;
+  const onLongClick = config.onLongClick;
+  const onDoubleClick = config.onDoubleClick;
 
   // storages.remove(cacheKey);
   const floatBtnStorage = storages.create(cacheKey);
@@ -125,12 +128,35 @@ function newFloatButton(config) {
     }
   );
 
+  function handleClick() {
+    if (onClick) {
+      onClick();
+    } else {
+      buttonDialog.showDialog();
+    }
+  }
+  function handleDoubleClick() {
+    if (onDoubleClick) {
+      onDoubleClick();
+    }
+  }
+  function handleLongClick() {
+    if (onLongClick) {
+      onLongClick();
+    } else {
+      settingDialog.showDialog();
+    }
+  }
+
   var touchX = 0; //记录按键被按下时的触摸坐标
   var touchY = 0; //记录按键被按下时的触摸坐标
   var buttonX, buttonY; //记录按键被按下时的悬浮窗位置
   var downTime; //记录按键被按下的时间以便判断长按等动作
+  var lastDownTime; //记录按键被按下的时间以便判断长按等动作
+  var isDoubleClick = false;
   var isMoved;
   var longPressTimer = 0;
+  var quickPressTimer = 0;
   floatBtn.button.setOnTouchListener(function (view, event) {
     const action = event.getAction();
     switch (action) {
@@ -143,7 +169,7 @@ function newFloatButton(config) {
         isMoved = false;
         longPressTimer = setTimeout(() => {
           longPressTimer = 0;
-          settingDialog.showDialog();
+          handleLongClick();
         }, 500);
         return true;
       case event.ACTION_MOVE:
@@ -162,13 +188,33 @@ function newFloatButton(config) {
           );
         }
         if (!isMoved && action === event.ACTION_UP) {
-          if (Date.now() - downTime < 300) {
+          var now = Date.now();
+          if (now - downTime < 300) {
             if (longPressTimer) {
               clearTimeout(longPressTimer);
               longPressTimer = 0;
             }
-            buttonDialog.showDialog();
+            if (onDoubleClick) {
+              if (now - lastDownTime < 300) {
+                isDoubleClick = true;
+                if (quickPressTimer) {
+                  clearTimeout(quickPressTimer);
+                  quickPressTimer = 0;
+                }
+                handleDoubleClick();
+              } else {
+                isDoubleClick = false;
+                quickPressTimer = setTimeout(() => {
+                  if (!isDoubleClick) {
+                    handleClick();
+                  }
+                }, 250);
+              }
+            } else {
+              handleClick();
+            }
           }
+          lastDownTime = now;
         }
         return true;
     }
