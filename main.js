@@ -16,7 +16,7 @@ const floatBtn = newFloat({
     <vertical gravity="center" bg="#FFFFFF" padding="20">
       <button id="reopen" text="继续播放" />
       <button id="playNext" text="下一集" />
-      <button id="fullscreen" text="全屏" />
+      <button id="back" text="返回" />
     </vertical>
   ),
   settingContent: (
@@ -37,64 +37,6 @@ function retry() {
   } else {
     count = 0;
   }
-}
-function startFromHome() {
-  if (isRunning) {
-    return;
-  }
-  count++;
-  log(`第${count}次执行重载操作`);
-  isRunning = true;
-  if (startTimer) {
-    clearTimeout(startTimer);
-    startTimer = 0;
-  }
-  if (fullScreenTimer) {
-    clearTimeout(fullScreenTimer);
-    fullScreenTimer = 0;
-  }
-
-  if (getId('tvDelAll').findOne(1000)) {
-    back();
-  } else if (getId('tvHistory').findOne(1000)) {
-    startPage('Home');
-  }
-  setTimeout(() => {
-    waitObjectRemove(className('Progressbar'), 6000)
-      .catch()
-      .finally(() => {
-        findObject(getId('tvName'))
-          .then(() => {
-            setTimeout(() => {
-              getId('tvHistory').findOne(2000).click();
-              startTimer = setTimeout(() => {
-                click(150, 250);
-                findObject(getId('ivThumb'), 1000)
-                  .then((item) => {
-                    item.parent().click();
-                    startTimer = 0;
-                    findObject(getId('subtitle_view'), 5000)
-                      .then((selector) => {
-                        if (selector.bounds().left !== 0) {
-                          findObject(getId('tvPlay'))
-                            .then((item) => item.click())
-                            .catch();
-                        }
-                        isRunning = false;
-                        count = 0;
-                      })
-                      .catch(() => {
-                        back();
-                        retry();
-                      });
-                  })
-                  .catch(retry);
-              }, 5000);
-            }, 4000);
-          })
-          .catch(retry);
-      });
-  }, 2000);
 }
 
 onDialogBtnClick(buttonDialog, 'reopen', () => {
@@ -146,14 +88,8 @@ onDialogBtnClick(buttonDialog, 'playNext', () => {
   }, 200);
 });
 
-onDialogBtnClick(buttonDialog, 'fullscreen', () => {
-  findObject(getId('subtitle_view')).then((selector) => {
-    if (selector.bounds().left !== 0) {
-      findObject(textContains('全屏'))
-        .then((item) => item.click())
-        .catch();
-    }
-  });
+onDialogBtnClick(buttonDialog, 'back', () => {
+  back();
 });
 
 function getId(key) {
@@ -195,4 +131,66 @@ function reopenVideo() {
     (device.height / 3) * 2,
     600
   );
+}
+
+function startFromHome() {
+  if (isRunning) {
+    return;
+  }
+  count++;
+  log(`第${count}次执行重载操作`);
+  isRunning = true;
+  if (startTimer) {
+    clearTimeout(startTimer);
+    startTimer = 0;
+  }
+  if (fullScreenTimer) {
+    clearTimeout(fullScreenTimer);
+    fullScreenTimer = 0;
+  }
+
+  if (getId('tvDelAll').findOne(1000)) {
+    back();
+  } else if (getId('tvHistory').findOne(1000)) {
+    startPage('Home');
+  }
+  setTimeout(() => {
+    waitObjectRemove(className('Progressbar'), 6000)
+      .catch()
+      .finally(() => {
+        findObject(getId('tvName'))
+          .then(() => {
+            setTimeout(() => {
+              getId('tvHistory').findOne(2000).click();
+              startTimer = setTimeout(() => {
+                click(150, 250);
+                findObject(getId('ivThumb'), 1000)
+                  .then((item) => {
+                    item.parent().click();
+                    startTimer = 0;
+                    findObject(getId('subtitle_view'), 5000)
+                      .then((selector) => {
+                        fullScreenTimer = setTimeout(() => {
+                          if (selector.bounds().left !== 0) {
+                            findObject(getId('tvPlay'))
+                              .then((item) => item.click())
+                              .catch();
+                          }
+                          isRunning = false;
+                          count = 0;
+                          fullScreenTimer = 0;
+                        }, 1000);
+                      })
+                      .catch(() => {
+                        back();
+                        retry();
+                      });
+                  })
+                  .catch(retry);
+              }, 5000);
+            }, 4000);
+          })
+          .catch(retry);
+      });
+  }, 2000);
 }
