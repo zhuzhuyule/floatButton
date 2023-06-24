@@ -22,6 +22,9 @@ const floatBtn = newFloat({
   settingContent: (
     <vertical gravity="center" bg="#FFFFFF" padding="20"></vertical>
   ),
+  onDoubleClick: () => {
+    back();
+  },
 });
 
 const buttonDialog = floatBtn.buttonDialog;
